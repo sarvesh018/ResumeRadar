@@ -1,0 +1,52 @@
+JOHN DOE
+Senior DevOps Engineer
+Email: john.doe@email.com | Phone: +91-9876543210
+LinkedIn: linkedin.com/in/johndoe | GitHub: github.com/johndoe
+Location: Pune, Maharashtra, India
+
+PROFESSIONAL SUMMARY
+Experienced DevOps Engineer with 3+ years of experience in CI/CD pipeline design,
+containerization, and cloud infrastructure. Skilled in automating deployment workflows
+using Jenkins, GitHub Actions, and GitLab CI. Strong background in Kubernetes cluster
+management, Terraform-based infrastructure as code, and monitoring with Grafana and
+Prometheus.
+
+TECHNICAL SKILLS
+- Programming: Python, Bash, JavaScript, SQL, C++
+- CI/CD: Jenkins, GitHub Actions, GitLab CI, Maven, Gradle
+- Containers: Docker, Kubernetes, Helm, Docker Compose
+- Cloud: AWS (EC2, S3, IAM, Lambda, RDS), GCP
+- IaC: Terraform, Ansible
+- Monitoring: Grafana, Prometheus, Alertmanager, ELK Stack
+- Databases: PostgreSQL, MySQL, MongoDB, Redis
+- OS: Linux (Ubuntu, CentOS), Nginx
+- Version Control: Git, Branching Strategies
+- Other: Microservices, REST APIs, Agile/Scrum, Jira
+
+WORK EXPERIENCE
+
+DevOps Engineer | TechCorp Solutions | Jan 2022 - Present
+- Designed and maintained CI/CD pipelines using Jenkins and GitHub Actions,
+  reducing deployment time by 60%
+- Managed Kubernetes clusters (K8s) with Helm charts for 15+ microservices
+- Implemented infrastructure as code using Terraform for AWS resources
+  including EC2, S3, RDS, and VPC configurations
+- Built monitoring dashboards in Grafana with Prometheus metrics and
+  configured Alertmanager for SLO-based alerting
+- Containerized applications using Docker with multi-stage builds,
+  reducing image sizes by 70%
+- Automated database backups using Python scripts with boto3 for S3
+
+Junior DevOps Engineer | StartupXYZ | Jun 2020 - Dec 2021
+- Set up GitLab CI/CD pipelines for automated testing and deployment
+- Managed Linux servers (Ubuntu) and configured Nginx reverse proxies
+- Wrote Bash scripts for log rotation, backup automation, and monitoring
+- Deployed applications on AWS EC2 with Ansible playbooks
+
+EDUCATION
+Bachelor of Engineering in Computer Science
+Pune University | 2016 - 2020 | GPA: 8.5/10
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect - Associate
+- Certified Kubernetes Administrator (CKA)

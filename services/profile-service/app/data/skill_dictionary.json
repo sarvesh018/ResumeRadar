@@ -1,0 +1,254 @@
+{
+  "skills": [
+    {
+      "canonical": "python",
+      "category": "programming_language",
+      "aliases": ["python3", "python 3", "py", "python2", "python 2"]
+    },
+    {
+      "canonical": "javascript",
+      "category": "programming_language",
+      "aliases": ["js", "es6", "es2015", "ecmascript", "vanilla js"]
+    },
+    {
+      "canonical": "typescript",
+      "category": "programming_language",
+      "aliases": ["ts", "type script"]
+    },
+    {
+      "canonical": "java",
+      "category": "programming_language",
+      "aliases": ["java 8", "java 11", "java 17", "jdk", "j2ee"]
+    },
+    {
+      "canonical": "c++",
+      "category": "programming_language",
+      "aliases": ["cpp", "c plus plus", "cplusplus"]
+    },
+    {
+      "canonical": "golang",
+      "category": "programming_language",
+      "aliases": ["go", "go lang", "go language"]
+    },
+    {
+      "canonical": "rust",
+      "category": "programming_language",
+      "aliases": ["rust lang", "rustlang"]
+    },
+    {
+      "canonical": "sql",
+      "category": "programming_language",
+      "aliases": ["structured query language", "plsql", "pl/sql", "tsql", "t-sql"]
+    },
+    {
+      "canonical": "bash",
+      "category": "programming_language",
+      "aliases": ["shell", "shell scripting", "bash scripting", "sh", "zsh"]
+    },
+    {
+      "canonical": "docker",
+      "category": "containerization",
+      "aliases": ["dockerfile", "docker compose", "docker-compose", "containers", "containerization"]
+    },
+    {
+      "canonical": "kubernetes",
+      "category": "container_orchestration",
+      "aliases": ["k8s", "kube", "kubectl", "k8", "container orchestration"]
+    },
+    {
+      "canonical": "helm",
+      "category": "container_orchestration",
+      "aliases": ["helm charts", "helm chart", "helmfile"]
+    },
+    {
+      "canonical": "aws",
+      "category": "cloud_platform",
+      "aliases": ["amazon web services", "amazon cloud"]
+    },
+    {
+      "canonical": "aws_ec2",
+      "category": "cloud_compute",
+      "aliases": ["ec2", "elastic compute cloud", "aws ec2"]
+    },
+    {
+      "canonical": "aws_s3",
+      "category": "cloud_storage",
+      "aliases": ["s3", "simple storage service", "aws s3"]
+    },
+    {
+      "canonical": "aws_iam",
+      "category": "cloud_security",
+      "aliases": ["iam", "identity and access management", "aws iam"]
+    },
+    {
+      "canonical": "aws_lambda",
+      "category": "cloud_serverless",
+      "aliases": ["lambda", "aws lambda", "serverless"]
+    },
+    {
+      "canonical": "aws_rds",
+      "category": "cloud_database",
+      "aliases": ["rds", "relational database service"]
+    },
+    {
+      "canonical": "azure",
+      "category": "cloud_platform",
+      "aliases": ["microsoft azure", "azure cloud", "ms azure"]
+    },
+    {
+      "canonical": "gcp",
+      "category": "cloud_platform",
+      "aliases": ["google cloud", "google cloud platform"]
+    },
+    {
+      "canonical": "terraform",
+      "category": "infrastructure_as_code",
+      "aliases": ["tf", "hcl", "hashicorp terraform", "terragrunt"]
+    },
+    {
+      "canonical": "ansible",
+      "category": "configuration_management",
+      "aliases": ["ansible playbook", "ansible tower", "awx"]
+    },
+    {
+      "canonical": "jenkins",
+      "category": "ci_cd",
+      "aliases": ["jenkins pipeline", "jenkinsfile", "jenkins ci"]
+    },
+    {
+      "canonical": "github_actions",
+      "category": "ci_cd",
+      "aliases": ["gha", "github action", "gh actions", "github workflows"]
+    },
+    {
+      "canonical": "gitlab_ci",
+      "category": "ci_cd",
+      "aliases": ["gitlab ci/cd", "gitlab pipeline", ".gitlab-ci.yml"]
+    },
+    {
+      "canonical": "ci_cd",
+      "category": "ci_cd",
+      "aliases": ["ci/cd", "cicd", "continuous integration", "continuous deployment", "continuous delivery"]
+    },
+    {
+      "canonical": "git",
+      "category": "version_control",
+      "aliases": ["github", "gitlab", "bitbucket", "version control"]
+    },
+    {
+      "canonical": "maven",
+      "category": "build_tool",
+      "aliases": ["apache maven", "mvn"]
+    },
+    {
+      "canonical": "gradle",
+      "category": "build_tool",
+      "aliases": ["gradle build"]
+    },
+    {
+      "canonical": "grafana",
+      "category": "monitoring",
+      "aliases": ["grafana dashboard", "grafana cloud"]
+    },
+    {
+      "canonical": "prometheus",
+      "category": "monitoring",
+      "aliases": ["prom", "promql"]
+    },
+    {
+      "canonical": "alertmanager",
+      "category": "monitoring",
+      "aliases": ["prometheus alertmanager", "alert manager"]
+    },
+    {
+      "canonical": "datadog",
+      "category": "monitoring",
+      "aliases": ["dd", "data dog"]
+    },
+    {
+      "canonical": "elasticsearch",
+      "category": "search_analytics",
+      "aliases": ["elastic", "elk", "elk stack", "es"]
+    },
+    {
+      "canonical": "postgresql",
+      "category": "database",
+      "aliases": ["postgres", "psql", "pg"]
+    },
+    {
+      "canonical": "mysql",
+      "category": "database",
+      "aliases": ["my sql", "mariadb"]
+    },
+    {
+      "canonical": "mongodb",
+      "category": "database",
+      "aliases": ["mongo", "nosql"]
+    },
+    {
+      "canonical": "redis",
+      "category": "database",
+      "aliases": ["redis cache", "elasticache"]
+    },
+    {
+      "canonical": "linux",
+      "category": "operating_system",
+      "aliases": ["ubuntu", "centos", "rhel", "debian", "linux administration"]
+    },
+    {
+      "canonical": "nginx",
+      "category": "web_server",
+      "aliases": ["nginx reverse proxy", "nginx load balancer"]
+    },
+    {
+      "canonical": "react",
+      "category": "frontend_framework",
+      "aliases": ["reactjs", "react.js", "react js"]
+    },
+    {
+      "canonical": "node.js",
+      "category": "runtime",
+      "aliases": ["nodejs", "node", "node js"]
+    },
+    {
+      "canonical": "fastapi",
+      "category": "web_framework",
+      "aliases": ["fast api"]
+    },
+    {
+      "canonical": "django",
+      "category": "web_framework",
+      "aliases": ["django rest framework", "drf"]
+    },
+    {
+      "canonical": "flask",
+      "category": "web_framework",
+      "aliases": ["flask api"]
+    },
+    {
+      "canonical": "rest_api",
+      "category": "api_design",
+      "aliases": ["rest", "restful", "restful api", "rest apis"]
+    },
+    {
+      "canonical": "graphql",
+      "category": "api_design",
+      "aliases": ["graph ql"]
+    },
+    {
+      "canonical": "microservices",
+      "category": "architecture",
+      "aliases": ["micro services", "microservice architecture", "microservice"]
+    },
+    {
+      "canonical": "agile",
+      "category": "methodology",
+      "aliases": ["scrum", "kanban", "sprint", "agile methodology"]
+    },
+    {
+      "canonical": "jira",
+      "category": "project_management",
+      "aliases": ["atlassian jira"]
+    }
+  ]
+}
