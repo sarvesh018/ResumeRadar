@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.env
+.venv
+venv
+*.egg-info
+.pytest_cache
+.ruff_cache
+.mypy_cache
+node_modules
+frontend/node_modules
+*.md
+LICENSE
+docker-compose.yml
