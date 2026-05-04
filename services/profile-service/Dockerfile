@@ -9,7 +9,8 @@ RUN pip install --no-cache-dir /build/common-py/ \
     pdfplumber \
     python-docx \
     rapidfuzz \
-    python-multipart && \
+    python-multipart \
+    spacy && \
     python -m spacy download en_core_web_sm
 
 FROM python:3.11-slim AS runtime
