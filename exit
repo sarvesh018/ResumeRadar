@@ -1,0 +1,41 @@
+[33mcommit 9dcc028b0badfe0a15aa487bcf7edadc8ef669de[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/development[m[33m, [m[1;32mdevelopment[m[33m)[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Mon May 4 23:28:31 2026 +0530
+
+    fix: updated dockerfile for profile-service
+
+[33mcommit 74bbc1f4c49ca82b601dad36844585c89583e2ea[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Sun May 3 20:57:09 2026 +0530
+
+    container: dockarized services
+
+[33mcommit 3d0929e54b22e0b0ec802f6d9905b1507cc4c5dc[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Sun May 3 00:16:14 2026 +0530
+
+    feat: analytics-service updated
+
+[33mcommit 5fcc644fb259af187b2f37cd410d2b788bca6ab9[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Sat May 2 20:05:49 2026 +0530
+
+    feat: matcher, profile, tracker service
+
+[33mcommit 6fa50dec0417da1389440d9607c244038c3d3ba6[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Fri May 1 18:02:54 2026 +0530
+
+    feat:auth service updated
+
+[33mcommit 7beea6c823457cec2e53aa5a7f73fecfa599ba46[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Fri May 1 02:16:05 2026 +0530
+
+    Updated file name
+
+[33mcommit ed4dad5a432dc1ebd9a8817f1c6a182f1122148c[m
+Author: Sarvesh <sarveshc111@gmail.com>
+Date:   Fri May 1 02:12:02 2026 +0530
+
+    Readme document
