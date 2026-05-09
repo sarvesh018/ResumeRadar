@@ -7,6 +7,7 @@ from resumeradar_common.middleware.error_handler import register_error_handlers
 from resumeradar_common.middleware.request_logger import RequestLoggerMiddleware
 from resumeradar_common.observability.logging import setup_logging
 from resumeradar_common.observability.metrics import setup_prometheus
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def create_app() -> FastAPI:
@@ -22,6 +23,16 @@ def create_app() -> FastAPI:
 
     app.add_middleware(RequestLoggerMiddleware)
     app.add_middleware(CorrelationIdMiddleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://localhost:5173",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     register_error_handlers(app)
     setup_prometheus(app, service_name=settings.service_name)
 
