@@ -24,7 +24,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.ts-CEm0XlQ4.js"
+        "assets/index.ts-B9sJ2ysn.js"
       ],
       "matches": [
         "*://*.naukri.com/*"
@@ -52,7 +52,7 @@
       ],
       "resources": [
         "icons/*",
-        "assets/index.ts-CEm0XlQ4.js"
+        "assets/index.ts-B9sJ2ysn.js"
       ],
       "use_dynamic_url": false
     }

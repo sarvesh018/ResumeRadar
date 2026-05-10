@@ -6,46 +6,46 @@
     "isEntry": true
   },
   "_main-!~{003}~.js": {
-    "file": "assets/main-CSTqHWDA.css",
+    "file": "assets/main-JjZWChLr.css",
     "src": "_main-!~{003}~.js"
   },
-  "_main-Czg7Yael.js": {
-    "file": "assets/main-Czg7Yael.js",
+  "_main-DXGPhjkJ.js": {
+    "file": "assets/main-DXGPhjkJ.js",
     "name": "main",
     "imports": [
-      "_storage-RRulO6VW.js"
+      "_storage-BWCD8PnL.js"
     ],
     "css": [
-      "assets/main-CSTqHWDA.css"
+      "assets/main-JjZWChLr.css"
     ]
   },
-  "_storage-RRulO6VW.js": {
-    "file": "assets/storage-RRulO6VW.js",
+  "_storage-BWCD8PnL.js": {
+    "file": "assets/storage-BWCD8PnL.js",
     "name": "storage"
   },
   "src/background/index.ts": {
-    "file": "assets/index.ts-CjD9aQMa.js",
+    "file": "assets/index.ts-CwN1ZVNX.js",
     "name": "index.ts",
     "src": "src/background/index.ts",
     "isEntry": true,
     "imports": [
-      "_storage-RRulO6VW.js"
+      "_storage-BWCD8PnL.js"
     ]
   },
   "src/content/index.ts": {
-    "file": "assets/index.ts-CEm0XlQ4.js",
+    "file": "assets/index.ts-B9sJ2ysn.js",
     "name": "index.ts",
     "src": "src/content/index.ts",
     "isEntry": true
   },
   "src/popup/index.html": {
-    "file": "assets/index.html-BS1JDWkN.js",
+    "file": "assets/index.html-CP7yeuUg.js",
     "name": "index.html",
     "src": "src/popup/index.html",
     "isEntry": true,
     "imports": [
-      "_main-Czg7Yael.js",
-      "_storage-RRulO6VW.js"
+      "_main-DXGPhjkJ.js",
+      "_storage-BWCD8PnL.js"
     ]
   }
 }

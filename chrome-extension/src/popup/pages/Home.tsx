@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Settings as SettingsIcon, LogOut, Briefcase, Eye } from 'lucide-react'
 import { clearAuth, getLatestJob } from '../../shared/storage'
 import type { AuthData, ExtractedJobData } from '../../shared/types'
+import JobMatchForm from '../components/JobMatchForm'
 
 interface Props {
   auth: AuthData
@@ -12,26 +13,35 @@ interface Props {
 export default function Home({ auth, onLogout, onOpenSettings }: Props) {
   const [latestJob, setLatestJob] = useState<ExtractedJobData | null>(null)
   const [currentSite, setCurrentSite] = useState<string>('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getLatestJob().then(setLatestJob)
+    refreshJob()
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0]
       if (tab?.url) {
-        try {
-          setCurrentSite(new URL(tab.url).hostname)
-        } catch {}
+        try { setCurrentSite(new URL(tab.url).hostname) } catch {}
       }
     })
   }, [])
+
+  const refreshJob = () => {
+    setLoading(true)
+    getLatestJob()
+      .then((job) => setLatestJob(job))
+      .finally(() => setLoading(false))
+  }
 
   const handleLogout = async () => {
     await clearAuth()
     onLogout()
   }
 
-  const isOnSupportedSite =
-    currentSite.includes('naukri.com') || currentSite.includes('linkedin.com')
+  const isOnSupportedSite = currentSite.includes('naukri.com') || currentSite.includes('linkedin.com')
+
+  if (latestJob && !loading) {
+    return <JobMatchForm job={latestJob} onClear={refreshJob} />
+  }
 
   return (
     <div className="flex flex-col h-[500px]">
@@ -64,34 +74,16 @@ export default function Home({ auth, onLogout, onOpenSettings }: Props) {
           )}
         </div>
 
-        {latestJob ? (
-          <div className="bg-white rounded-lg border border-brand-200 p-4">
-            <div className="flex items-start gap-2 mb-3">
-              <Briefcase className="w-5 h-5 text-brand-600 mt-0.5" />
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900">{latestJob.role_title}</div>
-                <div className="text-xs text-gray-600">{latestJob.company}</div>
-                {latestJob.location && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {latestJob.location}{latestJob.is_remote && ' · Remote'}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="text-xs text-gray-500 mb-3">JD preview: {latestJob.jd_text.slice(0, 120)}...</div>
-
-            <button className="btn btn-primary w-full" disabled>
-              Match & Save (coming in Part 2)
-            </button>
+        <div className="text-center py-12">
+          <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+          <div className="text-sm text-gray-500 mb-1">No job detected yet</div>
+          <div className="text-xs text-gray-400 mb-4">
+            Click Apply on any Naukri job and the details will appear here
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-            <div className="text-sm text-gray-500 mb-1">No job detected yet</div>
-            <div className="text-xs text-gray-400">Apply to a job on Naukri to auto-capture details</div>
-          </div>
-        )}
+          <button onClick={refreshJob} className="text-xs text-brand-600 hover:underline">
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 text-center">
