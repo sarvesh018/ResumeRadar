@@ -74,11 +74,21 @@ function handleClick(event: MouseEvent) {
         return
       }
       if (response?.success) {
+      if (response.added) {
+        const queueText = response.total === 1
+          ? '1 job in queue'
+          : `${response.total} jobs in queue`
         showInPageNotification(
-          `Captured: ${jobData.role_title} at ${jobData.company}. Click the ResumeRadar icon to match & save.`,
+          `Added: ${jobData.role_title} at ${jobData.company} — ${queueText}`,
+          'success'
+        )
+      } else {
+        showInPageNotification(
+          `Already in queue: ${jobData.role_title} at ${jobData.company}`,
           'success'
         )
       }
+    }
     })
   }, 200)
 }

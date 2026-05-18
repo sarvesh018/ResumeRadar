@@ -11,6 +11,24 @@ export interface ExtractedJobData {
   extracted_at: string
 }
 
+export type CapturedJobStatus =
+  | 'pending'
+  | 'processing'
+  | 'matched'
+  | 'saved'
+  | 'error'
+
+export interface CapturedJob {
+  id: string
+  job: ExtractedJobData
+  status: CapturedJobStatus
+  match_result_id?: string
+  match_score?: number
+  application_id?: string
+  error?: string
+  created_at: string
+}
+
 export interface AuthData {
   access_token: string
   refresh_token: string
@@ -61,6 +79,5 @@ export interface MatchResult {
 
 export type ExtensionMessage =
   | { type: 'JOB_DETECTED'; data: ExtractedJobData }
-  | { type: 'GET_LATEST_JOB' }
-  | { type: 'CLEAR_LATEST_JOB' }
-  | { type: 'OPEN_POPUP' }
+  | { type: 'GET_QUEUE_COUNT' }
+  | { type: 'CLEAR_BADGE' }
