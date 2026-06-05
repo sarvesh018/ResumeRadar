@@ -1,33 +1,33 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Optional
 
 
-class ProfileUpdateRequest(BaseModel):
-    full_name: str | None = Field(default=None, max_length=255)
-    headline: str | None = Field(default=None, max_length=500)
-    location: str | None = Field(default=None, max_length=255)
-    years_experience: int | None = Field(default=None, ge=0, le=50)
-    target_roles: list[str] | None = None
-    target_locations: list[str] | None = None
-    linkedin_url: str | None = Field(default=None, max_length=500)
-    github_url: str | None = Field(default=None, max_length=500)
-    portfolio_url: str | None = Field(default=None, max_length=500)
+class ProfileBase(BaseModel):
+    full_name: Optional[str] = None
+    headline: Optional[str] = None
+    location: Optional[str] = None
+    years_experience: Optional[int] = None
+    target_roles: Optional[list[str]] = None
+    target_locations: Optional[list[str]] = None
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    # NEW
+    technical_skills: Optional[list[str]] = None
 
 
-class ProfileResponse(BaseModel):
-    id: UUID
-    user_id: UUID
-    full_name: str | None
-    headline: str | None
-    location: str | None
-    years_experience: int | None
-    target_roles: list[str] | None
-    target_locations: list[str] | None
-    linkedin_url: str | None
-    github_url: str | None
-    portfolio_url: str | None
-    created_at: datetime
-    updated_at: datetime
+class ProfileUpdateRequest(ProfileBase):
+    pass
 
-    model_config = {"from_attributes": True}
+
+class ProfileResponse(ProfileBase):
+    id: str
+    user_id: str
+    technical_skills: list[str] = []   # Always return a list, never None
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True

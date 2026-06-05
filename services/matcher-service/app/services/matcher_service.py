@@ -1,162 +1,187 @@
-import structlog
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+"""
+Matcher Service
+================
+Orchestrates the full match pipeline:
+1. Extract skills from JD (Groq or spaCy)
+2. Load resume skills from DB
+3. Fetch profile skills from profile-service (supplement)
+4. Run 3-layer scoring
+5. Save result
+"""
+
+import logging
 from uuid import UUID
 
-from app.core.config import get_matcher_settings
-from app.repositories.match_repo import MatchRepository
-from app.schemas.match import (
-    MatchResponse, MatchHistoryResponse, MatchSummaryResponse,
-    MissingSkillDetail, SkillMatchDetail, SuggestionDetail,
-)
-from app.services.jd_parser import parse_jd_skills
-from app.services.keyword_matcher import compute_keyword_score
-from app.services.semantic_matcher import compute_semantic_score
-from app.services.taxonomy_matcher import compute_taxonomy_score
+import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
+from sentence_transformers import SentenceTransformer
 
-logger = structlog.get_logger()
+from ..core.config import settings
+from ..models.match_result import MatchResult
+from ..repositories.match_repo import MatchRepository
+from ..schemas.match import MatchRequest, MatchResponse
+from .jd_extractor import extract_skills_from_jd
+from .scoring import (
+    compute_keyword_score,
+    compute_semantic_skill_score,
+    compute_taxonomy_score,
+    compute_final_score,
+    generate_suggestions,
+)
+
+logger = logging.getLogger(__name__)
+
+# Load model once at startup (heavy operation)
+_model: SentenceTransformer | None = None
+
+
+def get_model() -> SentenceTransformer:
+    global _model
+    if _model is None:
+        logger.info("Loading sentence-transformers model...")
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+        logger.info("Model loaded")
+    return _model
 
 
 class MatcherService:
     def __init__(self, db: AsyncSession):
+        self.db = db
         self.repo = MatchRepository(db)
-        self.settings = get_matcher_settings()
 
     async def match_resume_to_jd(
-        self, user_id: UUID, resume_id: UUID, jd_text: str,
-        jd_company: str | None = None, jd_role: str | None = None,
-        resume_skills: list[dict] | None = None,
-        resume_text: str | None = None,
+        self,
+        user_id: UUID,
+        request: MatchRequest,
     ) -> MatchResponse:
-        jd_skills = parse_jd_skills(jd_text)
-        if resume_skills is None:
-            resume_skills = []
+        # 1. Load resume skills from DB
+        resume_skills = await self._get_resume_skills(request.resume_id)
+        logger.info(f"Resume has {len(resume_skills)} skills")
 
-        keyword_result = compute_keyword_score(resume_skills, jd_skills, self.settings.fuzzy_match_threshold)
-        semantic_result = compute_semantic_score(resume_text or "", jd_text, self.settings.semantic_similarity_threshold)
-        taxonomy_result = compute_taxonomy_score(resume_skills, jd_skills)
+        # 2. Fetch profile skills from profile-service to supplement
+        profile_skills = await self._get_profile_skills(user_id)
+        logger.info(f"Profile has {len(profile_skills)} skills")
 
-        overall_score = (
-            self.settings.keyword_weight * keyword_result["score"]
-            + self.settings.semantic_weight * semantic_result["score"]
-            + self.settings.taxonomy_weight * taxonomy_result["score"]
+        # 3. Combine: resume skills + profile skills (deduplicated)
+        all_resume_skills = list({
+            s.lower().strip()
+            for s in resume_skills + profile_skills
+            if s.strip()
+        })
+        logger.info(f"Combined skills for matching: {len(all_resume_skills)}")
+
+        # 4. Extract skills from JD using Groq or spaCy
+        jd_skills = await extract_skills_from_jd(
+            jd_text=request.jd_text,
+            groq_api_key=settings.groq_api_key,
+            groq_model=settings.groq_model,
         )
-        overall_score = round(min(overall_score, 1.0), 4)
+        logger.info(f"JD has {len(jd_skills)} extracted skills: {jd_skills[:10]}")
 
-        matched_skills = self._build_matched_skills(keyword_result, resume_skills, jd_skills)
-        missing_skills = self._build_missing_skills(keyword_result, taxonomy_result)
-        suggestions = self._generate_suggestions(missing_skills, taxonomy_result, overall_score)
+        if not jd_skills:
+            # If we extracted nothing, use basic text-level matching
+            jd_skills = self._basic_skill_extract(request.jd_text)
+            logger.warning(f"Using basic extraction, found {len(jd_skills)} skills")
 
-        match_record = await self.repo.create(
-            user_id=user_id, resume_id=resume_id, jd_text=jd_text,
-            jd_company=jd_company, jd_role=jd_role,
-            keyword_score=keyword_result["score"],
-            semantic_score=semantic_result["score"],
-            taxonomy_score=taxonomy_result["score"],
-            overall_score=overall_score,
-            matched_skills=[s.__dict__ if hasattr(s, '__dict__') else s for s in matched_skills],
-            missing_skills=[s.__dict__ if hasattr(s, '__dict__') else s for s in missing_skills],
-            suggestions=[s.__dict__ if hasattr(s, '__dict__') else s for s in suggestions],
+        # 5. Layer 1: Keyword score
+        keyword_score, matched_skills, missing_skills = compute_keyword_score(
+            jd_skills=jd_skills,
+            resume_skills=all_resume_skills,
+            fuzzy_threshold=85,
         )
 
-        logger.info("match_completed", user_id=str(user_id), overall_score=overall_score)
+        # 6. Layer 2: Semantic skill-to-skill score
+        # Only run on skills that did NOT match in Layer 1
+        unmatched_jd_skills = [s["skill"] for s in missing_skills]
+        if unmatched_jd_skills and all_resume_skills:
+            semantic_score = compute_semantic_skill_score(
+                jd_skills=unmatched_jd_skills,
+                resume_skills=all_resume_skills,
+                model=get_model(),
+                threshold=settings.semantic_match_threshold,
+            )
+        else:
+            semantic_score = 1.0 if not unmatched_jd_skills else 0.0
 
-        return MatchResponse(
-            id=match_record.id, resume_id=resume_id,
-            jd_company=jd_company, jd_role=jd_role,
+        # 7. Layer 3: Taxonomy/category score
+        taxonomy_score = compute_taxonomy_score(
+            jd_skills=jd_skills,
+            resume_skills=all_resume_skills,
+        )
+
+        # 8. Final weighted score
+        overall_score = compute_final_score(
+            keyword_score=keyword_score,
+            semantic_score=semantic_score,
+            taxonomy_score=taxonomy_score,
+            weight_keyword=settings.weight_keyword,
+            weight_semantic=settings.weight_semantic,
+            weight_taxonomy=settings.weight_taxonomy,
+        )
+
+        logger.info(
+            f"Scores — keyword: {keyword_score}, semantic: {semantic_score}, "
+            f"taxonomy: {taxonomy_score}, overall: {overall_score}"
+        )
+
+        # 9. Suggestions
+        suggestions = generate_suggestions(missing_skills, matched_skills, overall_score)
+
+        # 10. Save to DB
+        result = await self.repo.create(
+            user_id=user_id,
+            resume_id=request.resume_id,
+            jd_text=request.jd_text,
+            jd_company=request.jd_company,
+            jd_role=request.jd_role,
+            keyword_score=keyword_score,
+            semantic_score=semantic_score,
+            taxonomy_score=taxonomy_score,
             overall_score=overall_score,
-            keyword_score=keyword_result["score"],
-            semantic_score=semantic_result["score"],
-            taxonomy_score=taxonomy_result["score"],
-            matched_skills=matched_skills, missing_skills=missing_skills,
+            matched_skills=matched_skills,
+            missing_skills=missing_skills,
             suggestions=suggestions,
-            resume_skill_count=len(resume_skills), jd_skill_count=len(jd_skills),
-            created_at=match_record.created_at,
+            resume_skill_count=len(resume_skills),
+            jd_skill_count=len(jd_skills),
         )
 
-    async def get_match(self, match_id: UUID, user_id: UUID) -> MatchResponse:
-        record = await self.repo.get_by_id(match_id, user_id)
-        if record is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match result not found")
+        return MatchResponse.model_validate(result)
 
-        return MatchResponse(
-            id=record.id, resume_id=record.resume_id,
-            jd_company=record.jd_company, jd_role=record.jd_role,
-            overall_score=record.overall_score,
-            keyword_score=record.keyword_score,
-            semantic_score=record.semantic_score,
-            taxonomy_score=record.taxonomy_score,
-            matched_skills=[SkillMatchDetail(**s) for s in (record.matched_skills or [])],
-            missing_skills=[MissingSkillDetail(**s) for s in (record.missing_skills or [])],
-            suggestions=[SuggestionDetail(**s) for s in (record.suggestions or [])],
-            resume_skill_count=0, jd_skill_count=0,
-            created_at=record.created_at,
-        )
+    async def _get_resume_skills(self, resume_id: UUID) -> list[str]:
+        """Fetch skills extracted from the resume (stored in profile-service DB)."""
+        try:
+            skills = await self.repo.get_resume_skills(resume_id)
+            return [s.skill_name for s in skills]
+        except Exception as e:
+            logger.error(f"Failed to fetch resume skills: {e}")
+            return []
 
-    async def get_history(self, user_id: UUID) -> MatchHistoryResponse:
-        records = await self.repo.list_by_user(user_id)
-        results = [
-            MatchSummaryResponse(
-                id=r.id, resume_id=r.resume_id, jd_company=r.jd_company,
-                jd_role=r.jd_role, overall_score=r.overall_score, created_at=r.created_at,
-            ) for r in records
-        ]
-        return MatchHistoryResponse(results=results, total=len(results))
+    async def _get_profile_skills(self, user_id: UUID) -> list[str]:
+        """
+        Fetch skills from user's profile via HTTP to profile-service.
+        These are skills the user manually added to their profile.
+        Returns empty list if profile-service is unreachable (non-blocking).
+        """
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(
+                    f"{settings.profile_service_url}/api/v1/profile",
+                    headers={"X-Internal-User-ID": str(user_id)},
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("technical_skills", []) or []
+        except Exception as e:
+            logger.warning(f"Could not fetch profile skills (non-critical): {e}")
+        return []
 
-    def _build_matched_skills(self, keyword_result, resume_skills, jd_skills):
-        details = []
-        jd_skill_names = {s["skill_name"] for s in jd_skills}
-        for match in keyword_result.get("matched", []):
-            details.append(SkillMatchDetail(
-                skill=match["skill"], match_type=match["match_type"],
-                confidence=match["confidence"], found_in_resume=True, jd_required=True,
-            ))
-        matched_names = {d.skill for d in details}
-        for skill in resume_skills:
-            name = skill["skill_name"]
-            if name not in matched_names and name not in jd_skill_names:
-                details.append(SkillMatchDetail(
-                    skill=name, match_type="bonus", confidence=1.0,
-                    found_in_resume=True, jd_required=False,
-                ))
-        return details
-
-    def _build_missing_skills(self, keyword_result, taxonomy_result):
-        missing = []
-        for skill in keyword_result.get("missing", []):
-            suggestion = None
-            category = skill.get("category")
-            if category:
-                suggestion = f"Consider adding '{skill['skill']}' or a similar {category.replace('_', ' ')} tool to your resume."
-            missing.append(MissingSkillDetail(
-                skill=skill["skill"], category=category,
-                importance="required", suggestion=suggestion,
-            ))
-        return missing
-
-    def _generate_suggestions(self, missing_skills, taxonomy_result, overall_score):
-        suggestions = []
-        if missing_skills:
-            top_missing = [s.skill for s in missing_skills[:5]]
-            suggestions.append(SuggestionDetail(
-                section="skills", action="add",
-                text=f"Add these missing skills to your resume: {', '.join(top_missing)}",
-            ))
-        missing_cats = taxonomy_result.get("missing_categories", [])
-        if missing_cats:
-            cat_names = [c.replace("_", " ") for c in missing_cats[:3]]
-            suggestions.append(SuggestionDetail(
-                section="experience", action="add",
-                text=f"Your resume lacks experience in: {', '.join(cat_names)}. Add relevant projects or experience.",
-            ))
-        if overall_score < 0.5:
-            suggestions.append(SuggestionDetail(
-                section="summary", action="reword",
-                text="This role may not be a strong match. Consider targeting roles that better align with your current skills.",
-            ))
-        elif overall_score < 0.7:
-            suggestions.append(SuggestionDetail(
-                section="summary", action="emphasize",
-                text="Tailor your resume summary to highlight the skills this role requires. Reword experience bullets to use the JD's terminology.",
-            ))
-        return suggestions
+    def _basic_skill_extract(self, text: str) -> list[str]:
+        """Ultra-basic fallback if both Groq and spaCy fail."""
+        from .jd_extractor import TECH_SKILL_PATTERNS
+        import re
+        text_lower = text.lower()
+        found = []
+        for pattern in TECH_SKILL_PATTERNS:
+            if re.search(r'\b' + re.escape(pattern) + r'\b', text_lower):
+                found.append(pattern)
+        return found

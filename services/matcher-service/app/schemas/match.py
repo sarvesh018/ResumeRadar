@@ -1,31 +1,33 @@
-from datetime import datetime
-from uuid import UUID
 from pydantic import BaseModel, Field
+from typing import Optional
+from uuid import UUID
+from datetime import datetime
 
 
 class MatchRequest(BaseModel):
     resume_id: UUID
-    jd_text: str = Field(min_length=50, max_length=50000)
-    jd_company: str | None = Field(default=None, max_length=255)
-    jd_role: str | None = Field(default=None, max_length=255)
+    jd_text: str = Field(..., min_length=50)
+    jd_company: Optional[str] = None
+    jd_role: Optional[str] = None
 
 
 class SkillMatchDetail(BaseModel):
     skill: str
+    matched_with: Optional[str] = None
     match_type: str
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: float
     found_in_resume: bool
-    jd_required: bool = True
+    jd_required: bool
 
 
-class MissingSkillDetail(BaseModel):
+class MissingSkill(BaseModel):
     skill: str
-    category: str | None = None
-    importance: str = "required"
-    suggestion: str | None = None
+    category: Optional[str] = None
+    importance: str
+    suggestion: Optional[str] = None
 
 
-class SuggestionDetail(BaseModel):
+class Suggestion(BaseModel):
     section: str
     action: str
     text: str
@@ -34,31 +36,18 @@ class SuggestionDetail(BaseModel):
 class MatchResponse(BaseModel):
     id: UUID
     resume_id: UUID
-    jd_company: str | None
-    jd_role: str | None
-    overall_score: float = Field(ge=0.0, le=1.0)
-    keyword_score: float = Field(ge=0.0, le=1.0)
-    semantic_score: float = Field(ge=0.0, le=1.0)
-    taxonomy_score: float = Field(ge=0.0, le=1.0)
-    matched_skills: list[SkillMatchDetail]
-    missing_skills: list[MissingSkillDetail]
-    suggestions: list[SuggestionDetail]
-    resume_skill_count: int
-    jd_skill_count: int
-    created_at: datetime
-    model_config = {"from_attributes": True}
-
-
-class MatchSummaryResponse(BaseModel):
-    id: UUID
-    resume_id: UUID
-    jd_company: str | None
-    jd_role: str | None
+    jd_company: Optional[str] = None
+    jd_role: Optional[str] = None
     overall_score: float
+    keyword_score: float
+    semantic_score: float
+    taxonomy_score: float
+    matched_skills: list
+    missing_skills: list
+    suggestions: list
+    resume_skill_count: int = 0
+    jd_skill_count: int = 0
     created_at: datetime
-    model_config = {"from_attributes": True}
 
-
-class MatchHistoryResponse(BaseModel):
-    results: list[MatchSummaryResponse]
-    total: int
+    class Config:
+        from_attributes = True

@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS profile_db.profiles (
     github_url VARCHAR(500),
     portfolio_url VARCHAR(500),
     preferences JSONB DEFAULT '{}',
+    technical_skills JSONB DEFAULT '[]',
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );

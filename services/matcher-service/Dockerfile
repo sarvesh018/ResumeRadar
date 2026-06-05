@@ -8,6 +8,8 @@ COPY packages/common-py/ /build/common-py/
 RUN pip install --no-cache-dir /build/common-py/ \
     sentence-transformers \
     rapidfuzz \
+    spacy && \
+    python -m spacy download en_core_web_sm \
     numpy && \
     python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 

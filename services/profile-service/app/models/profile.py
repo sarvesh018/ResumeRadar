@@ -1,8 +1,9 @@
-import uuid
-
-from sqlalchemy import JSON, SmallInteger, String
-from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
+from sqlalchemy import Column, String, Integer, JSON, DateTime
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime
+from sqlalchemy.sql import func
 
 from resumeradar_common.database.base_model import Base
 
@@ -11,19 +12,22 @@ class Profile(Base):
     __tablename__ = "profiles"
     __table_args__ = {"schema": "profile_db"}
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), unique=True, nullable=False, index=True,
-    )
-    full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    headline: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    years_experience: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
-    target_roles: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    target_locations: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    linkedin_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    github_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    portfolio_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    preferences: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    id = Column(PGUUID, primary_key=True, default=uuid4)
+    user_id = Column(PGUUID, unique=True, nullable=False)
+    full_name = Column(String(255))
+    headline = Column(String(500))
+    location = Column(String(255))
+    years_experience = Column(Integer)
+    target_roles = Column(JSON)
+    target_locations = Column(JSON)
+    linkedin_url = Column(String(500))
+    github_url = Column(String(500))
+    portfolio_url = Column(String(500))
+    preferences = Column(JSON, default={})
 
-    def __repr__(self) -> str:
-        return f"<Profile(user_id={self.user_id}, name={self.full_name})>"
+    # NEW: user-defined technical skills list
+    # Example: ["Python", "Docker", "AWS", "Kubernetes"]
+    technical_skills = Column(JSON, default=list)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
